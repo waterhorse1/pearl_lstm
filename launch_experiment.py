@@ -25,6 +25,7 @@ def experiment(variant):
     # create multi-task environment and sample tasks
     env = NormalizedBoxEnv(ENVS[variant['env_name']](**variant['env_params']))
     tasks = env.get_all_task_idx()
+    print([t.tasks for t in env.env_list])
     obs_dim = int(np.prod(env.observation_space.shape))
     action_dim = int(np.prod(env.action_space.shape))
     reward_dim = 1
@@ -38,7 +39,7 @@ def experiment(variant):
     encoder_model = RecurrentEncoder if recurrent else MlpEncoder
 
     context_encoder = encoder_model(
-        hidden_sizes=[200, 200, 200],
+        hidden_sizes=[128, 128, 128],
         input_size=context_encoder_input_dim,
         output_size=context_encoder_output_dim,
     )
@@ -71,8 +72,8 @@ def experiment(variant):
     )
     algorithm = PEARLSoftActorCritic(
         env=env,
-        train_tasks=list(tasks[:variant['n_train_tasks']]),
-        eval_tasks=list(tasks[-variant['n_eval_tasks']:]),
+        train_tasks=list(range(3)),
+        eval_tasks=list(range(3)),
         nets=[agent, qf1, qf2, vf],
         latent_dim=latent_dim,
         **variant['algo_params']
@@ -121,20 +122,27 @@ def deep_update_dict(fr, to):
             to[k] = v
     return to
 
+def setup_seed(seed):
+    import random
+    random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    
 @click.command()
 @click.argument('config', default=None)
 @click.option('--gpu', default=0)
-@click.option('--docker', is_flag=True, default=False)
+@click.option('--seed', default=0)
 @click.option('--debug', is_flag=True, default=False)
-def main(config, gpu, docker, debug):
-
+def main(config, gpu, seed, debug):
+    setup_seed(seed)
     variant = default_config
     if config:
         with open(os.path.join(config)) as f:
             exp_params = json.load(f)
         variant = deep_update_dict(exp_params, variant)
     variant['util_params']['gpu_id'] = gpu
-
+    variant['seed'] = seed
     experiment(variant)
 
 if __name__ == "__main__":

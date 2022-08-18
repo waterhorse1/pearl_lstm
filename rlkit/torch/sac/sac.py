@@ -7,7 +7,7 @@ from torch import nn as nn
 
 import rlkit.torch.pytorch_util as ptu
 from rlkit.core.eval_util import create_stats_ordered_dict
-from rlkit.core.rl_algorithm import MetaRLAlgorithm
+from rlkit.core.rl_algorithm_ml3 import MetaRLAlgorithm
 
 
 class PEARLSoftActorCritic(MetaRLAlgorithm):
@@ -156,7 +156,7 @@ class PEARLSoftActorCritic(MetaRLAlgorithm):
 
         # sample context batch
         context_batch = self.sample_context(indices)
-
+        #print(context_batch.shape)
         # zero out context and hidden encoder state
         self.agent.clear_z(num_tasks=len(indices))
 

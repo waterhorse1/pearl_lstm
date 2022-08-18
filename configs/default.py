@@ -10,6 +10,12 @@ default_config = dict(
     env_params=dict(
         n_tasks=2, # number of distinct tasks in this domain, shoudl equal sum of train and eval tasks
         randomize_tasks=True, # shuffle the tasks after creating them
+        task_num= {
+            "dir": {"all_num":2, "train_num":2},
+            "vel": {"all_num":30, "train_num":24},
+            "mass": {"all_num":30, "train_num":24}
+        },
+        uniform_sample=False,
     ),
     algo_params=dict(
         meta_batch=16, # number of tasks to average the gradient across
@@ -42,6 +48,8 @@ default_config = dict(
         recurrent=False, # recurrent or permutation-invariant encoder
         dump_eval_paths=False, # whether to save evaluation trajectories
         use_traj_context=False,
+        train_env_test=30,
+        test_env_test=30
     ),
     util_params=dict(
         base_log_dir='output',

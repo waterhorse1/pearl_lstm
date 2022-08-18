@@ -4,13 +4,12 @@ from rlkit.envs.ant_multitask_base import MultitaskAntEnv
 from . import register_env
 
 
-@register_env('ant-dir')
-class AntDirEnv(MultitaskAntEnv):
+@register_env('ant-ml4')
+class AntML4lEnv(MultitaskAntEnv):
 
     def __init__(self, task={}, n_tasks=2, forward_backward=False, randomize_tasks=True, **kwargs):
         self.forward_backward = forward_backward
-        print(task)
-        super(AntDirEnv, self).__init__(task, n_tasks, **kwargs)
+        super(AntML4lEnv, self).__init__(task, n_tasks, **kwargs)
 
     def step(self, action):
         torso_xyz_before = np.array(self.get_body_com("torso"))

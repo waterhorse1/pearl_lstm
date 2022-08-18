@@ -23,10 +23,13 @@ class HalfCheetahDirEnv(HalfCheetahEnv):
         model-based control", 2012
         (https://homes.cs.washington.edu/~todorov/papers/TodorovIROS12.pdf)
     """
-    def __init__(self, task={}, n_tasks=2, randomize_tasks=False):
+    def __init__(self, task={}, n_tasks=2, n_train_tasks=2, n_test_tasks=2, randomize_tasks=False):
         directions = [-1, 1]
         self.tasks = [{'direction': direction} for direction in directions]
+        self.train_idx = list(range(n_train_tasks))
+        self.test_idx = list(range(n_train_tasks))
         self._task = task
+        
         self._goal_dir = task.get('direction', 1)
         self._goal = self._goal_dir
         super(HalfCheetahDirEnv, self).__init__()
@@ -54,6 +57,20 @@ class HalfCheetahDirEnv(HalfCheetahEnv):
 
     def get_all_task_idx(self):
         return range(len(self.tasks))
+    
+    def sample_train(self, num):
+        idx = np.random.choice(self.train_idx, num)
+        infos = []
+        for i in idx:
+            infos.append(self.tasks[i])
+        return idx, infos
+    
+    def sample_test(self, num):
+        idx = np.random.choice(self.test_idx, num)
+        infos = []
+        for i in idx:
+            infos.append(self.tasks[i])
+        return idx, infos
 
     def reset_task(self, idx):
         self._task = self.tasks[idx]

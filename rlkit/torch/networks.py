@@ -152,7 +152,7 @@ class RecurrentEncoder(FlattenMlp):
 
         # input should be (task, seq, feat) and hidden should be (task, 1, feat)
 
-        self.lstm = nn.LSTM(self.hidden_dim, self.hidden_dim, num_layers=1, batch_first=True)
+        self.gru = nn.GRU(self.hidden_dim, self.hidden_dim, num_layers=1, batch_first=True)
 
     def forward(self, in_, return_preactivations=False):
         # expects inputs of dimension (task, seq, feat)
@@ -165,7 +165,7 @@ class RecurrentEncoder(FlattenMlp):
             out = self.hidden_activation(out)
 
         out = out.view(task, seq, -1)
-        out, (hn, cn) = self.lstm(out, (self.hidden, torch.zeros(self.hidden.size()).to(ptu.device)))
+        out, hn = self.gru(out, self.hidden)
         self.hidden = hn
         # take the last hidden state to predict z
         out = out[:, -1, :]
