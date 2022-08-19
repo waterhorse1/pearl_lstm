@@ -33,6 +33,7 @@ class HalfCheetahML3Env(HalfCheetahEnv):
         self.task_idx = 0
         self.idx = 0
         self.get_train_test_idx()
+        self.get_taskinfo()
         super(HalfCheetahML3Env, self).__init__()
     
     def idx2task(self, idx):
@@ -92,6 +93,24 @@ class HalfCheetahML3Env(HalfCheetahEnv):
 
     def get_all_task_idx(self):
         return range(sum(self.task_num_list))
+    
+    def get_taskinfo(self):
+        task_info = []
+        for idx in range(sum(self.task_num_list)):
+            task_idx, sidx = self.idx2task(idx)
+            task_info.append(self.env_list[task_idx].tasks[sidx])
+        self.task_info = task_info
+        self.task_info_key = dict()
+        key_id = 0
+        for idx in range(sum(self.task_num_list)):
+            env_task_info =  self.task_info[idx]
+            key = list(env_task_info.keys())[0]
+            if key in self.task_info_key.keys():
+                pass
+            else:
+                self.task_info_key[key] = key_id
+                key_id += 1
+        print(self.task_info, self.task_info_key)
 
     def reset_task(self, idx):
         task_idx, idx = self.idx2task(idx)
