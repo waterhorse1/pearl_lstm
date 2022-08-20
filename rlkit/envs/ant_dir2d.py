@@ -4,9 +4,9 @@ from rlkit.envs.ant_multitask_base import MultitaskAntEnv
 from . import register_env
 from rlkit.envs.ant import AntEnv
 
-# Copy task structure from https://github.com/jonasrothfuss/ProMP/blob/master/meta_policy_search/envs/mujoco_envs/ant_rand_goal.py
-@register_env('ant-goal')
-class AntGoalEnv(AntEnv):
+@register_env('ant-dir2d')
+class AntDirEnv(AntEnv):
+
     def __init__(self, task={}, n_tasks=30, n_train_tasks=24, randomize_tasks=True, uniform_sample=False, **kwargs):
         self._task = task
         self._goal = 0.
@@ -15,47 +15,47 @@ class AntGoalEnv(AntEnv):
         self.train_idx = list(range(n_train_tasks))
         self.test_idx = list(range(n_train_tasks, n_tasks))
         self.tasks = self.sample_tasks(n_tasks)
-        super(AntGoalEnv, self).__init__()
+       # print(task)
+        super(AntDirEnv, self).__init__()
 
     def step(self, action):
+        torso_xyz_before = np.array(self.get_body_com("torso"))
+
+        direct = (np.cos(self._goal), np.sin(self._goal))
+
         self.do_simulation(action, self.frame_skip)
-        xposafter = np.array(self.get_body_com("torso"))
+        torso_xyz_after = np.array(self.get_body_com("torso"))
+        torso_velocity = torso_xyz_after - torso_xyz_before
+        forward_reward = np.dot((torso_velocity[:2]/self.dt), direct)
 
-        goal_reward = -np.sum(np.abs(xposafter[:2] - self._goal)) # make it happy, not suicidal
-
-        ctrl_cost = .1 * np.square(action).sum()
+        ctrl_cost = .5 * np.square(action).sum()
         contact_cost = 0.5 * 1e-3 * np.sum(
             np.square(np.clip(self.sim.data.cfrc_ext, -1, 1)))
-        survive_reward = 0.0
-        reward = goal_reward - ctrl_cost - contact_cost + survive_reward
+        survive_reward = 1.0
+        reward = forward_reward - ctrl_cost - contact_cost + survive_reward
         state = self.state_vector()
-        done = False
+        notdone = np.isfinite(state).all() \
+                  and state[2] >= 0.2 and state[2] <= 1.0
+        done = not notdone
         ob = self._get_obs()
         #print(ob.shape)
         return ob, reward, done, dict(
-            goal_forward=goal_reward,
+            reward_forward=forward_reward,
             reward_ctrl=-ctrl_cost,
             reward_contact=-contact_cost,
             reward_survive=survive_reward,
+            torso_velocity=torso_velocity,
         )
 
     def sample_tasks(self, num_tasks):
         if not self.uniform_sample:
-            a = np.random.random(num_tasks) * 2 * np.pi
-            r = 3 * np.random.random(num_tasks) ** 0.5
+            velocities = np.random.uniform(0., 2.0 * np.pi, size=(num_tasks,))
         else:
-            a = np.linspace(0.05, 1, num_tasks) * 2 * np.pi
-            r = 3 * np.linspace(0.05, 1, num_tasks) ** 0.5
-        goals = np.stack((r * np.cos(a), r * np.sin(a)), axis=-1)
-        tasks = [{'goal': goal} for goal in goals]
+            velocities = np.linspace(0.05, 2.0 * np.pi, num_tasks)
+        tasks = [{'dir': np.array([velocity, 0])} for velocity in velocities]
         if self.randomize_tasks:
             np.random.shuffle(tasks)
         return tasks
-    
-    def reset_task(self, idx):
-        self._task = self.tasks[idx]
-        self._goal = self._task['goal']
-        self.reset()
     
     def sample_train(self, num):
         idx = np.random.choice(self.train_idx, num)
@@ -73,10 +73,9 @@ class AntGoalEnv(AntEnv):
     
     def get_all_task_idx(self):
         return range(len(self.tasks))
-
-    def _get_obs(self):
-        return np.concatenate([
-            self.sim.data.qpos.flat,
-            self.sim.data.qvel.flat,
-            np.clip(self.sim.data.cfrc_ext, -1, 1).flat,
-        ])
+    
+    def reset_task(self, idx):
+        self._task = self.tasks[idx]
+        self._goal_dir = self._task['dir']
+        self._goal = self._goal_dir
+        self.reset()

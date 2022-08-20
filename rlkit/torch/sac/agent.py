@@ -153,6 +153,7 @@ class PEARLAgent(nn.Module):
         z = self.z
         obs = ptu.from_numpy(obs[None])
         in_ = torch.cat([obs, z], dim=1)
+        #print(z.shape, obs.shape)
         return self.policy.get_action(in_, deterministic=deterministic)
 
     def set_num_steps_total(self, n):

@@ -13,7 +13,8 @@ default_config = dict(
         task_num= {
             "dir": {"all_num":2, "train_num":2},
             "vel": {"all_num":30, "train_num":24},
-            "mass": {"all_num":30, "train_num":24}
+            "mass": {"all_num":30, "train_num":24},
+            "goal": {"all_num":30, "train_num":24}
         },
         uniform_sample=False,
     ),

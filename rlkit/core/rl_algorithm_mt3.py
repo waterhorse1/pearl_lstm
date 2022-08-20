@@ -48,7 +48,8 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
             plotter=None,
             train_env_test=30,
             test_env_test=30,
-            use_pure_one_hot=True
+            use_pure_one_hot=True,
+            goal_dim=1
             
     ):
         """

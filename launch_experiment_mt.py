@@ -39,6 +39,7 @@ def experiment(variant):
     variant['net']['base_type'] = MLPBase
     #encoder_model = RecurrentEncoder if recurrent else MlpEncoder
     use_pure_one_hot = variant['algo_params']['use_pure_one_hot'] 
+    goal_dim = variant['algo_params']['goal_dim'] 
     print(variant['algo_params']['use_pure_one_hot'] )
     '''
     context_encoder = encoder_model(
@@ -48,26 +49,26 @@ def experiment(variant):
     )
     '''
     qf1 = FlattenModularGatedCascadeCondNet(
-        input_shape=obs_dim + action_dim + 1,
+        input_shape=obs_dim + action_dim + goal_dim,
         em_input_shape=len(env.train_idx) if use_pure_one_hot else len(env.task_info_key.keys()),
         output_shape=1,
         **variant['net']
     )
     qf2 = FlattenModularGatedCascadeCondNet(
         #hidden_sizes=[net_size, net_size, net_size],
-        input_shape=obs_dim + action_dim + 1,
+        input_shape=obs_dim + action_dim + goal_dim,
         em_input_shape=len(env.train_idx) if use_pure_one_hot else len(env.task_info_key.keys()),
         output_shape=1,
         **variant['net']
     )
     vf = FlattenModularGatedCascadeCondNet(
-        input_shape=obs_dim + 1,
+        input_shape=obs_dim + goal_dim,
         em_input_shape=len(env.train_idx) if use_pure_one_hot else len(env.task_info_key.keys()),
         output_shape=1,
         **variant['net']
     )
     modular_model = FlattenModularGatedCascadeCondNet(
-        input_shape=obs_dim + 1,
+        input_shape=obs_dim + goal_dim,
         em_input_shape=len(env.train_idx) if use_pure_one_hot else len(env.task_info_key.keys()),
         output_shape=int(variant['net']['hidden_shapes'][-1]/2), #200
         **variant['net']

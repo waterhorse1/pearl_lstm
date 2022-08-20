@@ -12,6 +12,7 @@ default_config = dict(
         randomize_tasks=True, # shuffle the tasks after creating them
         task_num= {
             "dir": {"all_num":2, "train_num":2},
+            "goal": {"all_num":30, "train_num":24},
             "vel": {"all_num":30, "train_num":24},
             "mass": {"all_num":30, "train_num":24}
         },
@@ -62,6 +63,7 @@ default_config = dict(
         train_env_test=30,
         test_env_test=30,
         use_pure_one_hot=True,
+        goal_dim=1
     ),
     util_params=dict(
         base_log_dir='output',

@@ -23,7 +23,7 @@ class HalfCheetahDirEnv(HalfCheetahEnv):
         model-based control", 2012
         (https://homes.cs.washington.edu/~todorov/papers/TodorovIROS12.pdf)
     """
-    def __init__(self, task={}, n_tasks=2, n_train_tasks=2, n_test_tasks=2, randomize_tasks=False):
+    def __init__(self, task={}, n_tasks=2, n_train_tasks=2, randomize_tasks=False):
         directions = [-1, 1]
         self.tasks = [{'direction': direction} for direction in directions]
         self.train_idx = list(range(n_train_tasks))

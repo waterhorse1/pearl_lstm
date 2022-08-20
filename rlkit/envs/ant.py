@@ -39,13 +39,20 @@ class AntEnv(MujocoEnv):
             reward_survive=survive_reward,
             torso_velocity=torso_velocity,
         )
-
+    '''
     def _get_obs(self):
         # this is gym ant obs, should use rllab?
         # if position is needed, override this in subclasses
         return np.concatenate([
             self.sim.data.qpos.flat[2:],
             self.sim.data.qvel.flat,
+        ])
+    '''
+    def _get_obs(self):
+        return np.concatenate([
+            self.sim.data.qpos.flat,
+            self.sim.data.qvel.flat,
+            np.clip(self.sim.data.cfrc_ext, -1, 1).flat,
         ])
 
     def reset_model(self):
